@@ -15,6 +15,7 @@ class WinesController < ApplicationController
   # GET /wines/new
   def new
     @wine = Wine.new
+    @wine.wine_strains.build
   end
 
   # GET /wines/1/edit
@@ -45,11 +46,7 @@ class WinesController < ApplicationController
   # PATCH/PUT /wines/1.json
   def update
     respond_to do |format|
-      if @wine.update(name: wine_params[:name])
-        wine_params[:strain_ids].reject(&:empty?).each_with_index do |id, index|
-          WineStrain.update(wine_id: @wine.id, strain_id: id, percentage: wine_params[:percentages].reject(&:empty?)[index])
-        end
-        
+      if @wine.update(wine_params)
         format.html { redirect_to @wine, notice: 'Wine was successfully updated.' }
         format.json { render :show, status: :ok, location: @wine }
       else
@@ -77,6 +74,6 @@ class WinesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def wine_params
-      params.require(:wine).permit(:name, strain_ids: [], percentages: [])
+      params.require(:wine).permit(:name, strain_ids: [], percentages: [], wine_strains_attributes: [:id, :wine_id, :strain_id, :percentage,:_destroy])
     end
 end
